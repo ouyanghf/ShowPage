@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>家庭 AI 记忆系统问卷分析｜产品定义逻辑支撑</title>
+  <style>
+    :root {
+      --bg: #f7f4ef;
+      --card: #ffffff;
+      --ink: #222222;
+      --muted: #666666;
+      --soft: #8a7d6f;
+      --line: #e8dfd4;
+      --accent: #9a6b3f;
+      --accent-2: #c99b66;
+      --accent-3: #f0dfc9;
+      --green: #52796f;
+      --blue: #476a8a;
+      --red: #a85d4e;
+      --shadow: 0 18px 45px rgba(60, 45, 30, 0.10);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at 10% 0%, rgba(201,155,102,0.18), transparent 28%),
+        radial-gradient(circle at 90% 10%, rgba(82,121,111,0.12), transparent 24%),
+        var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+      color: var(--ink);
+      line-height: 1.65;
+    }
+
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 40px 22px 72px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, rgba(255,255,255,0.96), rgba(255,249,240,0.94));
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      padding: 42px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 360px;
+      height: 360px;
+      right: -120px;
+      top: -140px;
+      background: radial-gradient(circle, rgba(201,155,102,0.25), transparent 68%);
+      border-radius: 50%;
+    }
+
+    .eyebrow {
+      color: var(--accent);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      font-size: clamp(34px, 5vw, 58px);
+      line-height: 1.08;
+      margin: 0 0 18px;
+      letter-spacing: -0.04em;
+    }
+
+    .subtitle {
+      max-width: 880px;
+      font-size: 21px;
+      color: #4c4036;
+      margin: 0;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: #fff7ee;
+      border: 1px solid #ead7bf;
+      color: #5a432d;
+      font-weight: 650;
+      font-size: 14px;
+    }
+
+    .section {
+      margin-top: 34px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    h2 {
+      font-size: 28px;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      margin: 0;
+    }
+
+    .section-note {
+      color: var(--muted);
+      font-size: 14px;
+      max-width: 520px;
+      text-align: right;
+    }
+
+    .grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    .grid-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .card {
+      background: rgba(255,255,255,0.94);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 24px;
+      box-shadow: 0 10px 28px rgba(60, 45, 30, 0.06);
+    }
+
+    .card h3 {
+      margin: 0 0 10px;
+      font-size: 20px;
+      line-height: 1.25;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .big-num {
+      font-size: 44px;
+      line-height: 1;
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: -0.04em;
+      margin-bottom: 8px;
+    }
+
+    .num-desc {
+      color: #4d4137;
+      font-weight: 680;
+      margin-bottom: 7px;
+    }
+
+    .bar-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 150px 1fr 58px;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+    }
+
+    .bar-name {
+      color: #3c332c;
+      font-weight: 650;
+    }
+
+    .bar-track {
+      height: 12px;
+      background: #efe8df;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .bar {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    }
+
+    .bar-val {
+      color: var(--soft);
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .logic-flow {
+      display: grid;
+      gap: 14px;
+      counter-reset: step;
+    }
+
+    .step {
+      position: relative;
+      display: grid;
+      grid-template-columns: 58px 1fr;
+      gap: 16px;
+      align-items: start;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 20px;
+    }
+
+    .step::before {
+      counter-increment: step;
+      content: counter(step);
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: var(--accent);
+      color: white;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 18px rgba(154,107,63,0.25);
+    }
+
+    .step h3 {
+      margin: 0 0 6px;
+      font-size: 19px;
+    }
+
+    .step p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .quote {
+      background: linear-gradient(135deg, #5f432a, #9a6b3f);
+      color: white;
+      border-radius: 26px;
+      padding: 32px;
+      box-shadow: var(--shadow);
+    }
+
+    .quote h2 {
+      color: white;
+      margin-bottom: 12px;
+    }
+
+    .quote p {
+      font-size: 22px;
+      line-height: 1.55;
+      margin: 0;
+      color: rgba(255,255,255,0.94);
+      font-weight: 650;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 18px;
+      background: white;
+      border: 1px solid var(--line);
+    }
+
+    th, td {
+      text-align: left;
+      padding: 15px 16px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+      font-size: 15px;
+    }
+
+    th {
+      background: #fbf2e7;
+      color: #4e3824;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: var(--accent-3);
+      color: #6c4828;
+      font-size: 12px;
+      font-weight: 800;
+      margin-right: 6px;
+      white-space: nowrap;
+    }
+
+    .matrix {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+    }
+
+    .matrix-card {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 22px;
+      min-height: 210px;
+    }
+
+    .matrix-card .label {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    .matrix-card h3 {
+      margin: 0 0 12px;
+      font-size: 21px;
+    }
+
+    .matrix-card ul {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--muted);
+    }
+
+    .mvp-table td:first-child {
+      width: 80px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .footer {
+      margin-top: 36px;
+      color: var(--soft);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    @media (max-width: 860px) {
+      .hero { padding: 28px; border-radius: 22px; }
+      .grid-3, .grid-2, .matrix { grid-template-columns: 1fr; }
+      .section-title { display: block; }
+      .section-note { text-align: left; margin-top: 6px; }
+      .bar-row { grid-template-columns: 120px 1fr 50px; }
+      th, td { font-size: 14px; padding: 12px; }
+      .quote p { font-size: 18px; }
+    }
+
+    @media print {
+      body { background: white; }
+      .page { max-width: none; padding: 20px; }
+      .card, .hero, .quote, .step, .matrix-card { box-shadow: none; }
+      .section { break-inside: avoid; }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="eyebrow">Survey Insight · Product Definition</div>
+      <h1>家庭 AI 记忆系统问卷分析</h1>
+      <p class="subtitle">
+        这份问卷的核心结论不是“用户需要一个更好的相册”，而是：家庭需要一个
+        <strong>本地优先、可信可控、能自动整理与生成回忆的家庭记忆系统</strong>。
+      </p>
+      <div class="meta">
+        <span class="pill">样本：45 份有效答卷</span>
+        <span class="pill">有孩子家庭：38 份，占 84%</span>
+        <span class="pill">分析目标：支撑产品定义</span>
+        <span class="pill">输出日期：2026-06-03</span>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>01｜最核心判断</h2>
+        <div class="section-note">从用户行为、痛点、信任边界和购买偏好四个层面收敛。</div>
+      </div>
+      <div class="grid grid-3">
+        <div class="card">
+          <div class="big-num">80%</div>
+          <div class="num-desc">记录孩子照片/视频</div>
+          <p>家庭影像的高价值内容集中在孩子成长、旅行、节日、家庭聚会和亲人记忆。</p>
+        </div>
+        <div class="card">
+          <div class="big-num">89%</div>
+          <div class="num-desc">愿意集中管理家庭照片</div>
+          <p>用户不是不想整理，而是缺少一个可信、低成本、家庭协同的集中系统。</p>
+        </div>
+        <div class="card">
+          <div class="big-num">79%</div>
+          <div class="num-desc">偏好一次性购买本地设备</div>
+          <p>家庭记忆天然敏感，用户更信任本地优先，而不是完全依赖云端。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section quote">
+      <h2>一句话产品定义</h2>
+      <p>
+        家庭 AI 记忆系统，是一个面向有孩子家庭的本地优先记忆数据中心，
+        通过多设备导入、轻量采集和 AI 自动整理生成，把分散的家庭影像转化为
+        可重温、可分享、可传承的家庭记忆资产。
+      </p>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>02｜需求证据：家庭影像是高频高价值场景</h2>
+        <div class="section-note">用户并不是平均记录所有生活，而是集中记录不可重复的家庭关键时刻。</div>
+      </div>
+      <div class="card">
+        <h3>最常被记录的家庭内容</h3>
+        <div class="bar-list">
+          <div class="bar-row">
+            <div class="bar-name">孩子照片/视频</div>
+            <div class="bar-track"><div class="bar" style="width:80%"></div></div>
+            <div class="bar-val">80%</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-name">旅行</div>
+            <div class="bar-track"><div class="bar" style="width:76%"></div></div>
+            <div class="bar-val">76%</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-name">伴侣/家庭关系</div>
+            <div class="bar-track"><div class="bar" style="width:56%"></div></div>
+            <div class="bar-val">56%</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-name">宠物</div>
+            <div class="bar-track"><div class="bar" style="width:56%"></div></div>
+            <div class="bar-val">56%</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-name">日常生活</div>
+            <div class="bar-track"><div class="bar" style="width:24%"></div></div>
+            <div class="bar-val">24%</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>03｜用户矛盾：越想记录，越容易退出当下</h2>
+        <div class="section-note">这解释了为什么单纯做 App 相册不够，采集方式也需要被重新定义。</div>
+      </div>
+      <div class="grid grid-2">
+        <div class="card">
+          <h3>手机记录的核心矛盾</h3>
+          <p>
+            父母一旦拿起手机，就从陪伴者变成拍摄者。很多关键瞬间来得太快，用户经常“想拍但来不及拍”，
+            同时拍摄者自己也经常不在回忆里。
+          </p>
+        </div>
+        <div class="card">
+          <h3>问卷支撑</h3>
+          <div class="bar-list">
+            <div class="bar-row">
+              <div class="bar-name">来不及拍</div>
+              <div class="bar-track"><div class="bar" style="width:82%"></div></div>
+              <div class="bar-val">82%</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-name">愿意尝试可穿戴记录</div>
+              <div class="bar-track"><div class="bar" style="width:71%"></div></div>
+              <div class="bar-val">71%</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-name">希望不用一直拿手机</div>
+              <div class="bar-track"><div class="bar" style="width:55%"></div></div>
+              <div class="bar-val">55%</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-name">希望不打断陪伴</div>
+              <div class="bar-track"><div class="bar" style="width:53%"></div></div>
+              <div class="bar-val">53%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>04｜真正卡点：不是没有素材，而是素材无法变成回忆</h2>
+        <div class="section-note">拍摄之后的整理、筛选和剪辑，是家庭记忆系统最强的 AI 切入点。</div>
+      </div>
+      <div class="matrix">
+        <div class="matrix-card">
+          <div class="label">Pain 1</div>
+          <h3>素材太多</h3>
+          <ul>
+            <li>手机、云盘、电脑、硬盘、相机里都有素材</li>
+            <li>用户很难知道哪些值得留下</li>
+            <li>“筛选大量素材”是最常被排第一的困难</li>
+          </ul>
+        </div>
+        <div class="matrix-card">
+          <div class="label">Pain 2</div>
+          <h3>剪辑太麻烦</h3>
+          <ul>
+            <li>31% 用户因剪辑麻烦放弃做视频</li>
+            <li>18% 用户因为没时间放弃</li>
+            <li>长视频没人看，短视频又不会剪</li>
+          </ul>
+        </div>
+        <div class="matrix-card">
+          <div class="label">Pain 3</div>
+          <h3>回忆没有结构</h3>
+          <ul>
+            <li>照片停留在时间流里</li>
+            <li>没有按孩子成长、旅行、节日、家庭事件沉淀</li>
+            <li>家庭成员之间也缺少统一记忆空间</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>05｜信任边界：AI 要帮忙，但不能替用户做主</h2>
+        <div class="section-note">用户接受 AI 的前提是：原始素材保留、结果可确认、隐私可控。</div>
+      </div>
+      <div class="grid grid-2">
+        <div class="card">
+          <h3>用户更喜欢的 AI 生成方式</h3>
+          <table>
+            <tr><th>方式</th><th>占比</th><th>产品启示</th></tr>
+            <tr>
+              <td>先生成草稿，确认后保存</td>
+              <td>38%</td>
+              <td>AI 应该先做 memory draft，而不是直接替用户发布/保存最终作品。</td>
+            </tr>
+            <tr>
+              <td>自动生成并出现在首页</td>
+              <td>22%</td>
+              <td>可作为默认推荐流，但应允许撤回、隐藏和二次编辑。</td>
+            </tr>
+            <tr>
+              <td>只整理分类，不自动剪辑</td>
+              <td>13%</td>
+              <td>说明基础整理能力比“炫技生成”更刚需。</td>
+            </tr>
+            <tr>
+              <td>不希望系统自动生成</td>
+              <td>16%</td>
+              <td>必须提供低自动化模式，降低隐私和误判焦虑。</td>
+            </tr>
+          </table>
+        </div>
+        <div class="card">
+          <h3>AI 使用的主要担忧</h3>
+          <div class="bar-list">
+            <div class="bar-row">
+              <div class="bar-name">误删/漏掉重要内容</div>
+              <div class="bar-track"><div class="bar" style="width:33%"></div></div>
+              <div class="bar-val">33%</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-name">隐私和数据安全</div>
+              <div class="bar-track"><div class="bar" style="width:18%"></div></div>
+              <div class="bar-val">18%</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-name">AI 选择不准确</div>
+              <div class="bar-track"><div class="bar" style="width:16%"></div></div>
+              <div class="bar-val">16%</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-name">额外收费</div>
+              <div class="bar-track"><div class="bar" style="width:13%"></div></div>
+              <div class="bar-val">13%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>06｜逻辑递进：从需求到产品定义</h2>
+        <div class="section-note">这部分可以直接用于产品文档、BP 或投资人沟通。</div>
+      </div>
+      <div class="logic-flow">
+        <div class="step">
+          <div>
+            <h3>家庭有强记录需求</h3>
+            <p>家庭最想记录的是孩子成长、旅行、节日、家庭聚会和长辈记忆，这些都是不可重复的高情感价值时刻。</p>
+          </div>
+        </div>
+        <div class="step">
+          <div>
+            <h3>手机记录存在天然矛盾</h3>
+            <p>手机方便，但父母拿起手机就容易退出陪伴状态；关键瞬间经常来不及拍，拍摄者也经常不在画面里。</p>
+          </div>
+        </div>
+        <div class="step">
+          <div>
+            <h3>素材越多，回忆越少</h3>
+            <p>大量照片和视频沉睡在手机、云盘、硬盘、聊天软件和相机里，用户缺少低成本的整理与生成能力。</p>
+          </div>
+        </div>
+        <div class="step">
+          <div>
+            <h3>集中管理必须建立在信任上</h3>
+            <p>用户愿意集中管理家庭照片，但更偏好本地优先的一次性设备，说明家庭记忆产品必须强调可控、安全和可备份。</p>
+          </div>
+        </div>
+        <div class="step">
+          <div>
+            <h3>AI 是辅助，不是替代</h3>
+            <p>AI 最适合完成整理、筛选、理解和草稿生成，但最终保存、分享和删除应由家庭成员确认。</p>
+          </div>
+        </div>
+        <div class="step">
+          <div>
+            <h3>产品不是相册，而是家庭记忆系统</h3>
+            <p>最终产品要从“照片管理工具”升级为“家庭记忆资产系统”：可重温、可分享、可传承。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>07｜产品结构定义</h2>
+        <div class="section-note">将问卷 insight 转译成产品模块。</div>
+      </div>
+      <table>
+        <tr>
+          <th>产品模块</th>
+          <th>定义</th>
+          <th>对应用户需求</th>
+        </tr>
+        <tr>
+          <td><span class="tag">Hub</span>家庭记忆数据中心</td>
+          <td>集中存储手机、相机、云盘、硬盘、家人设备中的素材。</td>
+          <td>解决素材分散、存储爆炸、家庭协同困难。</td>
+        </tr>
+        <tr>
+          <td><span class="tag">Local-first</span>本地优先存储</td>
+          <td>原始素材本地保存，可备份、可冗余、可扩展。</td>
+          <td>解决隐私、安全和长期可信保存问题。</td>
+        </tr>
+        <tr>
+          <td><span class="tag">Capture</span>轻量采集设备</td>
+          <td>可穿戴/一键记录/多设备导入，减少举手机的打扰。</td>
+          <td>解决错过瞬间、打断陪伴、拍摄者缺席。</td>
+        </tr>
+        <tr>
+          <td><span class="tag">AI Organize</span>AI 自动整理</td>
+          <td>按人物、时间、地点、事件、孩子成长、旅行和节日自动归档。</td>
+          <td>解决素材太多、难查找、无结构问题。</td>
+        </tr>
+        <tr>
+          <td><span class="tag">AI Draft</span>AI 草稿生成</td>
+          <td>自动生成相册、照片集、短片草稿，用户确认后保存。</td>
+          <td>解决剪辑太麻烦，同时保留用户控制权。</td>
+        </tr>
+        <tr>
+          <td><span class="tag">Family</span>家庭共享</td>
+          <td>家庭成员共同查看、补充、收藏、评论和分享。</td>
+          <td>让记忆从个人相册变成家庭共同资产。</td>
+        </tr>
+      </table>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>08｜MVP 优先级</h2>
+        <div class="section-note">先验证“集中保存 + 自动整理 + 可确认生成”，再扩展多视角和高级创作。</div>
+      </div>
+      <table class="mvp-table">
+        <tr>
+          <th>优先级</th>
+          <th>功能</th>
+          <th>为什么先做</th>
+        </tr>
+        <tr>
+          <td>P0</td>
+          <td>手机/相机/SD 卡/云盘素材集中导入</td>
+          <td>先解决“散”的问题，这是后续 AI 理解和生成的基础。</td>
+        </tr>
+        <tr>
+          <td>P0</td>
+          <td>本地存储 + 自动备份/冗余提醒</td>
+          <td>建立家庭记忆系统的信任底座。</td>
+        </tr>
+        <tr>
+          <td>P0</td>
+          <td>按人物/时间/地点/事件自动整理</td>
+          <td>用户首先需要找得到、看得懂、能回顾。</td>
+        </tr>
+        <tr>
+          <td>P0</td>
+          <td>孩子成长、旅行、节日、家庭聚会优先识别</td>
+          <td>聚焦问卷中最高价值的家庭记忆场景。</td>
+        </tr>
+        <tr>
+          <td>P0</td>
+          <td>AI 生成草稿，用户确认保存</td>
+          <td>兼顾效率和信任，避免“AI 替用户做主”。</td>
+        </tr>
+        <tr>
+          <td>P1</td>
+          <td>一键/可穿戴采集关键瞬间</td>
+          <td>进一步解决“来不及拍”和“不想一直拿手机”。</td>
+        </tr>
+        <tr>
+          <td>P1</td>
+          <td>家庭共享空间</td>
+          <td>把个人影像库升级为家庭共同记忆空间。</td>
+        </tr>
+        <tr>
+          <td>P2</td>
+          <td>多视角自动剪辑</td>
+          <td>作为高级惊喜体验，形成硬件与 AI 的差异化壁垒。</td>
+        </tr>
+      </table>
+    </section>
+
+    <section class="section quote">
+      <h2>投资人表达版本</h2>
+      <p>
+        家庭影像的痛点已经从“拍不到”变成“拍得多但留不住、找不到、剪不动、不敢托管”。
+        我们不是再做一个相册，而是做一个本地优先的家庭 AI 记忆系统：先让家庭影像安全集中，
+        再用 AI 把素材理解成孩子成长、旅行、节日和亲人记忆，最后以用户可确认的方式生成
+        可重温、可分享、可传承的家庭回忆。
+      </p>
+    </section>
+
+    <div class="footer">
+      家庭 AI 记忆系统问卷分析 · HTML 单页版 · 可直接上传到云盘、Notion、飞书文档附件或网站空间预览
+    </div>
+  </main>
+</body>
+</html>

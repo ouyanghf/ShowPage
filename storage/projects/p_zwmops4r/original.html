@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>有孩子用户 — 儿童成长记录需求专题分析</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<style>
+  :root {
+    --primary: #e65100;
+    --primary-light: #ff8a65;
+    --green: #2e7d32;
+    --blue: #1565c0;
+    --purple: #6a1b9a;
+    --bg: #fafafa;
+    --card: #fff;
+    --text: #212121;
+    --sub: #616161;
+    --border: #eeeeee;
+    --shadow: 0 1px 4px rgba(0,0,0,.12);
+    --r: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'PingFang SC','Microsoft YaHei',sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.65; }
+
+  /* Header */
+  .hd { background: linear-gradient(135deg,#bf360c 0%,#e64a19 55%,#ff7043 100%); color:#fff; padding:44px 40px 32px; }
+  .hd-inner { max-width:1120px; margin:0 auto; }
+  .hd-tag { display:inline-block; background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.3); border-radius:20px; padding:3px 13px; font-size:11px; margin-bottom:12px; letter-spacing:.5px; }
+  .hd h1 { font-size:27px; font-weight:700; margin-bottom:8px; }
+  .hd-meta { display:flex; gap:20px; flex-wrap:wrap; font-size:12px; opacity:.88; margin-top:14px; }
+
+  /* Nav */
+  .nav { background:#fff; border-bottom:1px solid var(--border); position:sticky; top:0; z-index:99; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+  .nav-inner { max-width:1120px; margin:0 auto; display:flex; overflow-x:auto; }
+  .nav a { padding:13px 18px; font-size:12.5px; color:var(--sub); text-decoration:none; white-space:nowrap; border-bottom:3px solid transparent; transition:all .2s; display:block; }
+  .nav a:hover,.nav a.on { color:var(--primary); border-bottom-color:var(--primary); }
+
+  /* Main */
+  .main { max-width:1120px; margin:0 auto; padding:28px 18px 60px; }
+  .sec { margin-bottom:44px; scroll-margin-top:54px; }
+  .sec-title { font-size:18px; font-weight:700; border-left:4px solid var(--primary); padding-left:12px; margin-bottom:18px; display:flex; align-items:center; gap:8px; }
+  .sec-title .badge { font-size:10.5px; background:var(--primary); color:#fff; border-radius:10px; padding:2px 9px; font-weight:600; }
+
+  /* Cards */
+  .card { background:var(--card); border-radius:var(--r); padding:22px; box-shadow:var(--shadow); margin-bottom:18px; }
+  .card-title { font-size:14px; font-weight:700; margin-bottom:14px; display:flex; align-items:center; gap:8px; color:var(--text); }
+  .icon { width:26px; height:26px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; }
+  .g2 { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  .g3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px; }
+  @media(max-width:760px) { .g2,.g3 { grid-template-columns:1fr; } }
+
+  /* KPI */
+  .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(175px,1fr)); gap:14px; margin-bottom:18px; }
+  .kpi { background:var(--card); border-radius:var(--r); padding:18px 20px; box-shadow:var(--shadow); border-top:4px solid; }
+  .kpi.o { border-top-color:var(--primary); }
+  .kpi.g { border-top-color:var(--green); }
+  .kpi.b { border-top-color:var(--blue); }
+  .kpi.p { border-top-color:var(--purple); }
+  .kpi-v { font-size:34px; font-weight:800; line-height:1.1; }
+  .kpi-v.o { color:var(--primary); }
+  .kpi-v.g { color:var(--green); }
+  .kpi-v.b { color:var(--blue); }
+  .kpi-v.p { color:var(--purple); }
+  .kpi-l { font-size:12.5px; color:var(--sub); margin-top:5px; }
+  .kpi-n { font-size:11px; color:#9e9e9e; margin-top:3px; }
+
+  /* Table */
+  .tw { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th { background:#f5f5f5; font-weight:600; padding:9px 12px; text-align:left; white-space:nowrap; color:#424242; }
+  td { padding:8px 12px; border-bottom:1px solid #f0f0f0; }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:#fafafa; }
+  .hi { color:var(--green); font-weight:700; }
+  .lo { color:#c62828; font-weight:600; }
+  .mid { color:var(--primary); font-weight:600; }
+
+  /* Bar rows */
+  .brow { display:flex; align-items:center; gap:10px; margin-bottom:9px; font-size:12.5px; }
+  .blabel { width:160px; flex-shrink:0; color:var(--sub); line-height:1.3; }
+  .btrack { flex:1; background:#eee; border-radius:4px; height:22px; position:relative; overflow:hidden; }
+  .bfill { height:100%; border-radius:4px; display:flex; align-items:center; padding:0 8px; font-size:11.5px; font-weight:700; color:#fff; white-space:nowrap; }
+  .bval { font-size:11.5px; font-weight:700; color:var(--sub); flex-shrink:0; min-width:80px; }
+
+  /* Insight */
+  .ins { border-left:4px solid; border-radius:0 8px 8px 0; padding:12px 16px; margin:14px 0; font-size:13px; }
+  .ins.o { background:#fff3e0; border-color:var(--primary); color:#7c3000; }
+  .ins.g { background:#e8f5e9; border-color:var(--green); color:#1b5e20; }
+  .ins.b { background:#e3f2fd; border-color:var(--blue); color:#0d3c76; }
+  .ins.r { background:#ffebee; border-color:#c62828; color:#7f0000; }
+  .ins.p { background:#f3e5f5; border-color:var(--purple); color:#4a0072; }
+
+  /* Q-label */
+  .qlabel { font-size:11px; color:#757575; background:#f5f5f5; border-radius:6px; padding:7px 11px; margin-bottom:10px; }
+  .qlabel b { color:#424242; }
+
+  /* Age badge */
+  .ab { display:inline-block; border-radius:12px; padding:2px 9px; font-size:11px; font-weight:700; margin:0 2px; }
+  .ab-y { background:#fff3e0; color:#e65100; }
+  .ab-s { background:#e3f2fd; color:#1565c0; }
+  .ab-t { background:#f3e5f5; color:#6a1b9a; }
+  .ab-g { background:#e8f5e9; color:#2e7d32; }
+
+  /* Separator */
+  .divider { border:none; border-top:1px solid var(--border); margin:20px 0; }
+
+  /* Chart */
+  .ch { width:100%; }
+
+  /* Footer */
+  footer { text-align:center; font-size:11.5px; color:#bdbdbd; padding:20px; border-top:1px solid var(--border); margin-top:32px; }
+</style>
+</head>
+<body>
+
+<div class="hd">
+  <div class="hd-inner">
+    <div class="hd-tag">有孩子用户专题 · eufy HomeBase 4</div>
+    <h1>儿童成长记录需求专题分析</h1>
+    <p style="font-size:14px;opacity:.9;">聚焦 S41–S57 · 照片管理痛点 / AI相册 / AI记忆故事 / 摄像头自动拍摄</p>
+    <div class="hd-meta">
+      <span>👨‍👩‍👧 有孩子用户 n=20，占全体 20/65（31%）</span>
+      <span>👶 幼儿(0-6岁) n=8 &nbsp;|&nbsp; 🧒 学龄(7-12岁) n=8 &nbsp;|&nbsp; 🧑 青少年(13-18岁) n=12</span>
+      <span>📅 2026-04-13</span>
+    </div>
+  </div>
+</div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="#profile" class="on">用户画像</a>
+    <a href="#pain">照片管理痛点</a>
+    <a href="#ai-album">AI相册功能</a>
+    <a href="#memory">AI记忆故事</a>
+    <a href="#camera">摄像头场景</a>
+    <a href="#summary">总结建议</a>
+  </div>
+</nav>
+
+<div class="main">
+
+<!-- ===== 总览KPI ===== -->
+<div style="margin-bottom:32px;">
+  <div class="ins g" style="font-size:14.5px;padding:16px 20px;margin-bottom:18px;">
+    <strong>核心结论：</strong>有孩子用户是AI成长记录的最强需求群体。<strong>学龄期(7-12岁)家长需求最集中，AI相册接受度达100%</strong>；幼儿期家长对摄像头全量拍摄最开放；45+岁家长对AI记忆故事接受度高达90%。
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi o">
+      <div class="kpi-v o">85%</div>
+      <div class="kpi-l">S42 AI家庭照片整理正向接受</div>
+      <div class="kpi-n">17/20 (VH:13 + SH:4)</div>
+    </div>
+    <div class="kpi g">
+      <div class="kpi-v g">75%</div>
+      <div class="kpi-l">S51 AI记忆故事正向意愿</div>
+      <div class="kpi-n">15/20 (非常想看:7 + 比较想看:8)</div>
+    </div>
+    <div class="kpi b">
+      <div class="kpi-v b">60%</div>
+      <div class="kpi-l">S54 摄像头自动拍摄接受度</div>
+      <div class="kpi-n">12/20 (VI:5 + SI:7)</div>
+    </div>
+    <div class="kpi p">
+      <div class="kpi-v p">40%</div>
+      <div class="kpi-l">想做成长视频但太费时 (S41)</div>
+      <div class="kpi-n">8/20，学龄期最高 5/8 (62%)</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 用户画像 ===== -->
+<div class="sec" id="profile">
+  <div class="sec-title">有孩子用户画像 <span class="badge">n=20</span></div>
+  <div class="g3">
+    <div class="card">
+      <div class="card-title"><span class="icon" style="background:#fff3e0;">👶</span>孩子年龄分布</div>
+      <div class="qlabel"><b>S5：</b>家庭结构（多选，各组有重叠）</div>
+      <div id="ageKidsChart" class="ch" style="height:200px;"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon" style="background:#e3f2fd;">👨‍👩</span>家长年龄 & 性别</div>
+      <div class="qlabel"><b>S3 + S2</b></div>
+      <div style="padding:8px 0;">
+        <div class="brow"><div class="blabel">家长&lt;45岁</div><div class="btrack"><div class="bfill" style="width:50%;background:#1565c0;">10/20 (50%)</div></div></div>
+        <div class="brow"><div class="blabel">家长45+岁</div><div class="btrack"><div class="bfill" style="width:50%;background:#7986cb;">10/20 (50%)</div></div></div>
+        <hr class="divider">
+        <div class="brow"><div class="blabel">男性</div><div class="btrack"><div class="bfill" style="width:70%;background:#0277bd;">14/20 (70%)</div></div></div>
+        <div class="brow"><div class="blabel">女性</div><div class="btrack"><div class="bfill" style="width:20%;background:#0288d1;">4/20 (20%)</div></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon" style="background:#e8f5e9;">🏠</span>房屋 & 收入</div>
+      <div class="qlabel"><b>S7 + S4</b></div>
+      <div style="padding:8px 0;">
+        <div class="brow"><div class="blabel">独立屋</div><div class="btrack"><div class="bfill" style="width:90%;background:#2e7d32;">18/20 (90%)</div></div></div>
+        <div class="brow"><div class="blabel">公寓</div><div class="btrack"><div class="bfill" style="width:10%;background:#66bb6a;">2/20 (10%)</div></div></div>
+        <hr class="divider">
+        <div class="brow"><div class="blabel">年收入≥$250K</div><div class="btrack"><div class="bfill" style="width:40%;background:#f57f17;">8/20 (40%)</div></div></div>
+        <div class="brow"><div class="blabel">$75K-$100K</div><div class="btrack"><div class="bfill" style="width:25%;background:#ffa000;">5/20 (25%)</div></div></div>
+        <div class="brow"><div class="blabel">＜$50K</div><div class="btrack"><div class="bfill" style="width:15%;background:#ffca28;">3/20 (15%)</div></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="ins b">
+    <strong>画像特征：</strong>90%住独立屋，40%年收入超$250K（高收入家庭为主）。家庭人口：50%为3-4人家庭，45%为5人以上大家庭。50岁左右的中年家长与35-44岁年轻家长各占一半。
+  </div>
+</div>
+
+<!-- ===== 照片管理痛点 ===== -->
+<div class="sec" id="pain">
+  <div class="sec-title">儿童照片管理痛点 <span class="badge">S41</span></div>
+  <div class="qlabel"><b>S41题目：</b>"How do you feel about managing your children's photos?" (多选，n=20)</div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-title"><span class="icon" style="background:#fce8e6;">😓</span>整体痛点排序（有孩子群体）</div>
+      <div id="painOverallChart" class="ch" style="height:260px;"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon" style="background:#e3f2fd;">📊</span>核心痛点 × 孩子年龄段对比</div>
+      <div id="painByAgeChart" class="ch" style="height:260px;"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon" style="background:#f3e5f5;">🔢</span>详细数据：痛点 × 孩子年龄段 × 家长年龄</div>
+    <div class="tw">
+      <table>
+        <thead>
+          <tr>
+            <th>痛点</th>
+            <th>整体 (n=20)</th>
+            <th><span class="ab ab-y">幼儿(0-6)</span> n=8</th>
+            <th><span class="ab ab-s">学龄(7-12)</span> n=8</th>
+            <th><span class="ab ab-t">青少年(13-18)</span> n=12</th>
+            <th>家长&lt;45 n=10</th>
+            <th>家长45+ n=10</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>照片太多散乱，找不到特定阶段</td>
+            <td class="mid">9/20 (45%)</td>
+            <td>4/8 (50%)</td>
+            <td>4/8 (50%)</td>
+            <td class="hi">7/12 (58%)</td>
+            <td>4/10 (40%)</td>
+            <td>5/10 (50%)</td>
+          </tr>
+          <tr>
+            <td><strong>想做成长视频/回顾但太费时 ⭐</strong></td>
+            <td class="hi">8/20 (40%)</td>
+            <td>3/8 (38%)</td>
+            <td class="hi">5/8 (62%)</td>
+            <td>4/12 (33%)</td>
+            <td>4/10 (40%)</td>
+            <td>4/10 (40%)</td>
+          </tr>
+          <tr>
+            <td>家人照片各存手机，无法集中</td>
+            <td>6/20 (30%)</td>
+            <td>2/8 (25%)</td>
+            <td>2/8 (25%)</td>
+            <td>5/12 (42%)</td>
+            <td class="lo">1/10 (10%)</td>
+            <td class="hi">5/10 (50%)</td>
+          </tr>
+          <tr>
+            <td>存着但几乎不回看</td>
+            <td>4/20 (20%)</td>
+            <td>2/8 (25%)</td>
+            <td>2/8 (25%)</td>
+            <td>1/12 (8%)</td>
+            <td>3/10 (30%)</td>
+            <td>1/10 (10%)</td>
+          </tr>
+          <tr>
+            <td>没有困扰</td>
+            <td>6/20 (30%)</td>
+            <td>2/8 (25%)</td>
+            <td>2/8 (25%)</td>
+            <td>4/12 (33%)</td>
+            <td>3/10 (30%)</td>
+            <td>3/10 (30%)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="ins o">
+      <strong>学龄期(7-12岁)家长的成长视频需求最强（5/8, 62%）</strong>，是青少年期（33%）的近2倍。可能因为这一阶段是孩子"成长最快、变化最大"的时期，家长记录愿望最迫切。
+    </div>
+    <div class="ins g">
+      <strong>家人照片分散的痛点在45+岁家长中尤为突出（5/10, 50%）</strong>，与年轻家长（1/10, 10%）差异悬殊——老一辈家庭成员（祖父母）拍了照片但无法统一到同一个地方查看。
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon" style="background:#fff3e0;">📅</span>S49 回看旧照片频率（有孩子）</div>
+    <div class="qlabel"><b>S49：</b>"Do you actively look back at old photos? How often?" (n=20)</div>
+    <div style="padding:6px 0;">
+      <div class="brow"><div class="blabel">偶尔（节日/纪念日触发）</div><div class="btrack"><div class="bfill" style="width:60%;background:#e65100;">12/20 (60%)</div></div><div class="bval">12/20 60%</div></div>
+      <div class="brow"><div class="blabel">经常（隔段时间会翻看）</div><div class="btrack"><div class="bfill" style="width:30%;background:#ff8a65;">6/20 (30%)</div></div><div class="bval">6/20 30%</div></div>
+      <div class="brow"><div class="blabel">很少（几乎不看）</div><div class="btrack"><div class="bfill" style="width:10%;background:#ffccbc;">2/20 (10%)</div></div><div class="bval">2/20 10%</div></div>
+    </div>
+    <div class="ins o" style="margin-top:12px;">
+      有孩子用户中 <strong>90%会主动回看旧照片</strong>（vs 全体78%），其中60%是事件触发型。这直接支持"此刻X年前"、节日AI故事推送等功能的需求。
+    </div>
+  </div>
+</div>
+
+<!-- ===== AI相册功能 ===== -->
+<div class="sec" id="ai-album">
+  <div class="sec-title">AI相册功能接受度 <span class="badge">S42 · S43 · S50</span></div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-title"><span class="icon" style="background:#e8f5e9;">✅</span>S42 AI家庭照片整理接受度</div>
+      <div class="qlabel"><b>S42：</b>"If you could unlimitedly back up all photos of your children/family, auto-organize them by stage, and auto-generate growth recaps on special occasions — would this be helpful?" (n=20)</div>
+      <div id="s42Chart" class="ch" style="height:240px;"></div>
+      <div class="ins g" style="margin-top:12px;">
+        <strong>学龄期家长达到100%正向接受（8/8）</strong>，青少年期92%（11/12）。整体来看，有孩子用户比全体无孩子用户（67%）高出18个百分点。
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon" style="background:#fce8e6;">❓</span>S43 儿童照片功能"没必要"程度（反向验证需求）</div>
+      <div class="qlabel"><b>S43：</b>"Which features do you feel are 'unnecessary'?" 标注率越低=该功能需求越强 (n=20)</div>
+      <div id="s43Chart" class="ch" style="height:240px;"></div>
+      <div class="ins o" style="margin-top:12px;">
+        <strong>"全部都想要（8/20, 40%）"</strong>是最多人选的选项之一，其中幼儿期家长最高（4/8, 50%）。里程碑提醒和"X年前今天"的需求最强（仅25%认为没必要）。
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon" style="background:#e3f2fd;">📊</span>S43 详细数据：功能"没必要"× 孩子年龄段</div>
+    <div class="tw">
+      <table>
+        <thead>
+          <tr>
+            <th>功能</th>
+            <th>有孩子整体 (n=20)</th>
+            <th><span class="ab ab-y">幼儿(0-6)</span> n=8</th>
+            <th><span class="ab ab-s">学龄(7-12)</span> n=8</th>
+            <th><span class="ab ab-t">青少年(13-18)</span> n=12</th>
+            <th>解读</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>🎂 里程碑提醒（"宝宝第一步"等）</td>
+            <td class="hi">5/20 (25%) 最低</td>
+            <td>2/8 (25%)</td>
+            <td>2/8 (25%)</td>
+            <td>4/12 (33%)</td>
+            <td class="hi">需求最强，仅1/4认为没必要</td>
+          </tr>
+          <tr>
+            <td>📸 汇聚全家成员的孩子照片</td>
+            <td class="hi">5/20 (25%) 最低</td>
+            <td>2/8 (25%)</td>
+            <td>4/8 (50%)</td>
+            <td>4/12 (33%)</td>
+            <td class="hi">需求强；学龄期孩子已大，分歧更多</td>
+          </tr>
+          <tr>
+            <td>🗓 "X年前的今天"记忆提醒</td>
+            <td class="hi">5/20 (25%) 最低</td>
+            <td>2/8 (25%)</td>
+            <td>2/8 (25%)</td>
+            <td>4/12 (33%)</td>
+            <td class="hi">各年龄段均有强需求</td>
+          </tr>
+          <tr>
+            <td>📁 按年龄段分组相册</td>
+            <td>7/20 (35%)</td>
+            <td class="hi">2/8 (25%)</td>
+            <td class="lo">4/8 (50%)</td>
+            <td class="lo">6/12 (50%)</td>
+            <td>幼儿期最需要；大孩子已有自己管理方式</td>
+          </tr>
+          <tr>
+            <td>🎬 AI生成成长视频</td>
+            <td>8/20 (40%)</td>
+            <td>3/8 (38%)</td>
+            <td>4/8 (50%)</td>
+            <td>5/12 (42%)</td>
+            <td>接受度中等；期望更自然风格</td>
+          </tr>
+          <tr>
+            <td>⭐ <strong>以上全都想要</strong></td>
+            <td class="hi">8/20 (40%)</td>
+            <td class="hi">4/8 (50%)</td>
+            <td>3/8 (38%)</td>
+            <td>5/12 (42%)</td>
+            <td class="hi">幼儿期家长全部都想要比例最高</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon" style="background:#f3e5f5;">🔍</span>S50 AI相册分类 Must-Have（有孩子群体）</div>
+    <div class="qlabel"><b>S50：</b>"If AI could automatically categorize and organize your photos, which categories would be 'must-have'?" (多选，n=20)</div>
+    <div style="padding:6px 0;">
+      <div class="brow"><div class="blabel">人物相册（按人脸分组）</div><div class="btrack"><div class="bfill" style="width:80%;background:#6a1b9a;">16/20 (80%)</div></div><div class="bval">16/20 80%</div></div>
+      <div class="brow"><div class="blabel">儿童成长相册（按年龄段）</div><div class="btrack"><div class="bfill" style="width:40%;background:#8e24aa;">8/20 (40%)</div></div><div class="bval">8/20 40%</div></div>
+      <div class="brow"><div class="blabel">旅行相册</div><div class="btrack"><div class="bfill" style="width:30%;background:#ab47bc;">6/20 (30%)</div></div><div class="bval">6/20 30%</div></div>
+      <div class="brow"><div class="blabel">地点/地图相册</div><div class="btrack"><div class="bfill" style="width:30%;background:#ce93d8;">6/20 (30%)</div></div><div class="bval">6/20 30%</div></div>
+      <div class="brow"><div class="blabel">节日/派对相册</div><div class="btrack"><div class="bfill" style="width:30%;background:#e1bee7;">6/20 (30%)</div></div><div class="bval">6/20 30%</div></div>
+      <div class="brow"><div class="blabel">以上均不需要</div><div class="btrack"><div class="bfill" style="width:15%;background:#bdbdbd;">3/20 (15%)</div></div><div class="bval">3/20 15%</div></div>
+    </div>
+    <div class="ins p">
+      <strong>人脸分组相册（16/20, 80%）</strong>是有孩子用户中接受度最高的AI分类功能，远高于全体（55%）。儿童成长相册（8/20, 40%）是第二位，明确展示了年龄轴的需求。
+    </div>
+  </div>
+</div>
+
+<!-- ===== AI记忆故事 ===== -->
+<div class="sec" id="memory">
+  <div class="sec-title">AI记忆故事 <span class="badge">S51 · S52 · S53</span></div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-title"><span class="icon" style="background:#f3e5f5;">🎬</span>S51 AI记忆故事接受度分布</div>
+      <div class="qlabel"><b>S51：</b>"If AI could periodically pick the best moments from your old photos, set them to music, and generate memory stories for you — would you want to see them?" (n=20)</div>
+      <div id="s51Chart" class="ch" style="height:260px;"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon" style="background:#e3f2fd;">📈</span>S51 正向率 × 孩子年龄 × 家长年龄</div>
+      <div style="padding:8px 0;margin-top:6px;">
+        <div class="brow"><div class="blabel">整体有孩子</div><div class="btrack"><div class="bfill" style="width:75%;background:#6a1b9a;">15/20 (75%)</div></div><div class="bval">15/20 75%</div></div>
+        <hr class="divider" style="margin:6px 0;">
+        <div style="font-size:11px;color:#9e9e9e;margin:4px 0 6px;">按孩子年龄段</div>
+        <div class="brow"><div class="blabel"><span class="ab ab-y">幼儿(0-6)</span></div><div class="btrack"><div class="bfill" style="width:88%;background:#e65100;">7/8 (88%)</div></div><div class="bval">7/8 88%</div></div>
+        <div class="brow"><div class="blabel"><span class="ab ab-s">学龄(7-12)</span></div><div class="btrack"><div class="bfill" style="width:75%;background:#1565c0;">6/8 (75%)</div></div><div class="bval">6/8 75%</div></div>
+        <div class="brow"><div class="blabel"><span class="ab ab-t">青少年(13-18)</span></div><div class="btrack"><div class="bfill" style="width:75%;background:#6a1b9a;">9/12 (75%)</div></div><div class="bval">9/12 75%</div></div>
+        <hr class="divider" style="margin:6px 0;">
+        <div style="font-size:11px;color:#9e9e9e;margin:4px 0 6px;">按家长年龄</div>
+        <div class="brow"><div class="blabel">家长45+岁</div><div class="btrack"><div class="bfill" style="width:90%;background:#2e7d32;">9/10 (90%)</div></div><div class="bval">9/10 90%</div></div>
+        <div class="brow"><div class="blabel">家长&lt;45岁</div><div class="btrack"><div class="bfill" style="width:60%;background:#66bb6a;">6/10 (60%)</div></div><div class="bval">6/10 60%</div></div>
+      </div>
+      <div class="ins g" style="margin-top:8px;">
+        <strong>45+岁家长对AI记忆故事接受度高达90%（9/10）</strong>，显著高于年轻家长（60%）。这部分45+岁家长的孩子多在学龄至青少年期，正是"珍贵时光一去不返"的感触时期。
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon" style="background:#e8f5e9;">🎭</span>S52 最受欢迎的AI记忆故事主题（有孩子内部）</div>
+    <div class="qlabel"><b>S52：</b>"Which themes of AI-generated memory stories would you most want to see?" (多选，n=20)</div>
+    <div id="s52Chart" class="ch" style="height:280px;"></div>
+    <div class="ins o">
+      <strong>儿童成长故事（12/20, 60%）</strong>是绝对主题首选，且各年龄段均高。学龄期家长偏好最高（6/8, 75%）。旅行故事（8/20, 40%）是第二位，也与孩子成长紧密相关。
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon" style="background:#ffebee;">⚠️</span>S53 不想看AI记忆故事的原因（有孩子）</div>
+    <div class="qlabel"><b>S53：</b>不感兴趣的原因（仅有5人选了不感兴趣，以下为原因）(n=20)</div>
+    <div style="padding:6px 0;">
+      <div class="brow"><div class="blabel">AI选的照片不是我想要的</div><div class="btrack"><div class="bfill" style="width:20%;background:#c62828;">4/20 (20%)</div></div><div class="bval">4/20 20%</div></div>
+      <div class="brow"><div class="blabel">担心推送太频繁</div><div class="btrack"><div class="bfill" style="width:10%;background:#e53935;">2/20 (10%)</div></div><div class="bval">2/20 10%</div></div>
+      <div class="brow"><div class="blabel">转场/音乐太华丽，偏爱原始照片</div><div class="btrack"><div class="bfill" style="width:10%;background:#ef5350;">2/20 (10%)</div></div><div class="bval">2/20 10%</div></div>
+      <div class="brow"><div class="blabel">分享给家人感觉尴尬</div><div class="btrack"><div class="bfill" style="width:5%;background:#e57373;">1/20 (5%)</div></div><div class="bval">1/20 5%</div></div>
+    </div>
+    <div class="ins r" style="margin-top:8px;">
+      最核心顾虑仍是<strong>"AI选片质量不信任（4/20, 20%）"</strong>。但相比全体（20%），有孩子用户的整体阻力更小——有孩子群体仅5人不感兴趣，整体意愿远高于全体。产品需提供"AI推荐+手动精选"机制。
+    </div>
+  </div>
+</div>
+
+<!-- ===== 摄像头场景 ===== -->
+<div class="sec" id="camera">
+  <div class="sec-title">摄像头自动拍摄场景 <span class="badge">S54 · S55 · S56 · S57</span></div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-title"><span class="icon" style="background:#e8f5e9;">📷</span>S54 摄像头自动拍摄家庭时刻接受度</div>
+      <div class="qlabel"><b>S54：</b>"What is your acceptance level of 'cameras automatically capturing warm family moments and generating memory clips, stored locally and NOT uploaded to the cloud'?" (n=20)</div>
+      <div id="s54Chart" class="ch" style="height:260px;"></div>
+      <div class="ins g" style="margin-top:10px;">
+        有孩子用户整体接受度60%（12/20），显著高于无孩子（40%）。<strong>学龄期家长最高（75%）</strong>，<strong>幼儿期却最低（50%）并有更多"全部OK"的分散态度</strong>。反对者（仅5/20, 25%）中青少年期父母比例更高（4/12, 33%）。
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon" style="background:#fff3e0;">🏠</span>S54 接受度详细分解 × 孩子年龄</div>
+      <div id="s54ByAgeChart" class="ch" style="height:260px;"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon" style="background:#e3f2fd;">🎯</span>S55 希望录制的场景（有孩子）× 孩子年龄段</div>
+    <div class="qlabel"><b>S55：</b>"Which scenarios would you like the camera to auto-record?" (多选，n=20)</div>
+    <div class="tw">
+      <table>
+        <thead>
+          <tr>
+            <th>场景</th>
+            <th>整体 (n=20)</th>
+            <th><span class="ab ab-y">幼儿(0-6)</span> n=8</th>
+            <th><span class="ab ab-s">学龄(7-12)</span> n=8</th>
+            <th><span class="ab ab-t">青少年(13-18)</span> n=12</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>🏫 孩子上学/放学</td><td class="hi">6/20 (30%)</td><td>4/8 (50%)</td><td class="hi">4/8 (50%)</td><td>4/12 (33%)</td></tr>
+          <tr><td>🌳 孩子在庭院玩耍</td><td class="hi">6/20 (30%)</td><td>3/8 (38%)</td><td class="hi">4/8 (50%)</td><td>3/12 (25%)</td></tr>
+          <tr><td>🎉 家庭聚会/BBQ</td><td>5/20 (25%)</td><td>1/8 (12%)</td><td>2/8 (25%)</td><td class="hi">4/12 (33%)</td></tr>
+          <tr><td>🎃 节日访客（万圣节/圣诞）</td><td>4/20 (20%)</td><td>1/8 (12%)</td><td>2/8 (25%)</td><td>2/12 (17%)</td></tr>
+          <tr><td>📦 快递/邮件互动</td><td>4/20 (20%)</td><td class="hi">3/8 (38%)</td><td>1/8 (12%)</td><td>3/12 (25%)</td></tr>
+          <tr><td>👣 宝宝第一步等里程碑</td><td>3/20 (15%)</td><td>0/8 (0%)</td><td>1/8 (12%)</td><td class="hi">3/12 (25%)</td></tr>
+          <tr><td>🐾 宠物活动趣味时刻</td><td>3/20 (15%)</td><td>0/8 (0%)</td><td>2/8 (25%)</td><td>2/12 (17%)</td></tr>
+          <tr><td>🍳 室内温馨家庭时刻</td><td>3/20 (15%)</td><td>2/8 (25%)</td><td>2/8 (25%)</td><td>2/12 (17%)</td></tr>
+          <tr><td style="color:#9e9e9e;">没有特别想录制的</td><td>3/20 (15%)</td><td>2/8 (25%)</td><td>1/8 (12%)</td><td>0/12 (0%)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="ins b" style="margin-top:12px;">
+      <strong>学龄期家长最想录制孩子上学/庭院玩耍（各50%）</strong>——这个年龄段是孩子独立活动的关键期。幼儿期家长对快递互动兴趣更高（38%），可能与家中有小孩时对陌生人安全更关注有关。青少年期家长更偏向记录全家聚会（33%）。
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon" style="background:#fce8e6;">🚫</span>S56 不希望录制的场景 × 孩子年龄段</div>
+    <div class="qlabel"><b>S56：</b>"Which scenarios would you NOT want the camera to record?" (多选，n=20)</div>
+    <div class="tw">
+      <table>
+        <thead>
+          <tr>
+            <th>场景</th>
+            <th>整体 (n=20)</th>
+            <th><span class="ab ab-y">幼儿(0-6)</span> n=8</th>
+            <th><span class="ab ab-s">学龄(7-12)</span> n=8</th>
+            <th><span class="ab ab-t">青少年(13-18)</span> n=12</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="hi">✅ 对所有场景都可以接受</td><td class="hi">7/20 (35%)</td><td class="hi">5/8 (62%)</td><td>3/8 (38%)</td><td>4/12 (33%)</td></tr>
+          <tr><td>🍼 宝宝日常居家活动</td><td>6/20 (30%)</td><td>2/8 (25%)</td><td>3/8 (38%)</td><td>4/12 (33%)</td></tr>
+          <tr><td>🏠 室内温馨家庭时刻</td><td>4/20 (20%)</td><td>2/8 (25%)</td><td>3/8 (38%)</td><td class="lo">1/12 (8%)</td></tr>
+          <tr><td>🌳 儿童庭院玩耍</td><td>4/20 (20%)</td><td>1/8 (12%)</td><td>1/8 (12%)</td><td>2/12 (17%)</td></tr>
+          <tr><td>🏫 孩子上学/放学</td><td>3/20 (15%)</td><td>1/8 (12%)</td><td>1/8 (12%)</td><td>1/12 (8%)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="g2" style="margin-top:12px;">
+      <div class="ins g">
+        <strong>幼儿期家长对全量录制接受度最高（62%"全部都可以"）</strong>，说明婴幼儿阶段的家长记录欲望最强，对摄像头介入有更高容忍度。
+      </div>
+      <div class="ins r">
+        <strong>青少年期家长对"宝宝日常居家"不想录制比例较高（4/12, 33%）</strong>，可能因为青少年有隐私意识，且家长也更尊重孩子隐私。
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon" style="background:#f3e5f5;">🔒</span>S57 不想录制室内的主要原因（有孩子）</div>
+    <div class="qlabel"><b>S57：</b>"If you do NOT want the camera to record indoor family moments, what are the main reasons?" (n=20)</div>
+    <div style="padding:6px 0;">
+      <div class="brow"><div class="blabel">室内是最私密空间</div><div class="btrack"><div class="bfill" style="width:20%;background:#7b1fa2;">4/20 (20%)</div></div><div class="bval">4/20 20%</div></div>
+      <div class="brow"><div class="blabel">担心数据泄露/被滥用</div><div class="btrack"><div class="bfill" style="width:10%;background:#8e24aa;">2/20 (10%)</div></div><div class="bval">2/20 10%</div></div>
+      <div class="brow"><div class="blabel">日常太普通，不值得录</div><div class="btrack"><div class="bfill" style="width:10%;background:#ab47bc;">2/20 (10%)</div></div><div class="bval">2/20 10%</div></div>
+      <div class="brow"><div class="blabel">感觉被监控而非被记录</div><div class="btrack"><div class="bfill" style="width:5%;background:#ce93d8;">1/20 (5%)</div></div><div class="bval">1/20 5%</div></div>
+      <div class="brow"><div class="blabel">家庭成员不同意被拍</div><div class="btrack"><div class="bfill" style="width:5%;background:#e1bee7;">1/20 (5%)</div></div><div class="bval">1/20 5%</div></div>
+      <div class="brow"><div class="blabel">想自主控制何时开录</div><div class="btrack"><div class="bfill" style="width:5%;background:#f3e5f5;"><span style="color:#7b1fa2;">1/20 (5%)</span></div></div><div class="bval">1/20 5%</div></div>
+    </div>
+    <div class="ins p" style="margin-top:8px;">
+      有孩子用户室内录制的主要阻力仍是<strong>隐私感（4/20, 20%）</strong>，但整体阻力低于全体（各项比例相对较低）。关键产品承诺：<strong>"本地加密存储，绝不上云"</strong>的信任建设是突破室内录制顾虑的核心。
+    </div>
+  </div>
+</div>
+
+<!-- ===== 总结建议 ===== -->
+<div class="sec" id="summary">
+  <div class="sec-title">分群总结与产品建议</div>
+
+  <!-- 三个子群特征 -->
+  <div class="g3" style="margin-bottom:20px;">
+    <div class="card" style="border-top:3px solid #e65100;">
+      <div style="font-size:13px;font-weight:700;margin-bottom:10px;">👶 幼儿期家长(0-6岁) n=8</div>
+      <ul style="font-size:12.5px;padding-left:16px;line-height:2;">
+        <li>S42 AI整理正向：<strong>6/8 (75%)</strong></li>
+        <li>摄像头接受：<strong>4/8 (50%)，62%对所有场景OK</strong></li>
+        <li>AI记忆故事：<strong>7/8 (88%) 最高</strong></li>
+        <li>最强痛点：里程碑不想错过、照片散乱</li>
+        <li>按年龄分组相册需求最迫切（仅25%认为没必要）</li>
+      </ul>
+      <div class="ins o" style="margin-top:10px;font-size:12px;">重点功能：自动里程碑提醒 + 成长相册分阶 + 摄像头全量拍摄</div>
+    </div>
+    <div class="card" style="border-top:3px solid #1565c0;">
+      <div style="font-size:13px;font-weight:700;margin-bottom:10px;">🧒 学龄期家长(7-12岁) n=8</div>
+      <ul style="font-size:12.5px;padding-left:16px;line-height:2;">
+        <li>S42 AI整理正向：<strong>8/8 (100%) 最高</strong></li>
+        <li>摄像头接受：<strong>6/8 (75%) 最高</strong></li>
+        <li>成长视频痛点：<strong>5/8 (62%) 最强需求</strong></li>
+        <li>AI记忆故事：<strong>6/8 (75%)</strong></li>
+        <li>最想录：孩子上学放学、庭院玩耍（各50%）</li>
+      </ul>
+      <div class="ins b" style="margin-top:10px;font-size:12px;">重点功能：AI成长视频自动生成 + 孩子日常自动录制 + 学校场景</div>
+    </div>
+    <div class="card" style="border-top:3px solid #6a1b9a;">
+      <div style="font-size:13px;font-weight:700;margin-bottom:10px;">🧑 青少年期家长(13-18岁) n=12</div>
+      <ul style="font-size:12.5px;padding-left:16px;line-height:2;">
+        <li>S42 AI整理正向：<strong>11/12 (92%)</strong></li>
+        <li>摄像头接受：<strong>6/12 (50%)，反对最多4/12(33%)</strong></li>
+        <li>AI记忆故事：<strong>9/12 (75%)</strong></li>
+        <li>最想录：家庭聚会BBQ（4/12, 33%）</li>
+        <li>照片散乱最严重（7/12, 58%）</li>
+      </ul>
+      <div class="ins p" style="margin-top:10px;font-size:12px;">重点功能：家庭聚会自动整理 + 家庭共享相册 + 尊重青少年隐私设置</div>
+    </div>
+  </div>
+
+  <!-- 功能优先级 -->
+  <div class="card">
+    <div class="card-title"><span class="icon" style="background:#e8f5e9;">📋</span>有孩子群体功能优先级矩阵</div>
+    <div class="tw">
+      <table>
+        <thead>
+          <tr><th>功能</th><th>整体接受度</th><th>幼儿期</th><th>学龄期</th><th>青少年期</th><th>优先级</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>👤 人脸分组相册 (S50)</strong></td>
+            <td class="hi">16/20 (80%)</td>
+            <td class="hi">高</td><td class="hi">高</td><td class="hi">高</td>
+            <td><span style="background:#fce8e6;color:#c62828;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:700;">P0</span></td>
+          </tr>
+          <tr>
+            <td><strong>🎂 里程碑提醒 (S43)</strong></td>
+            <td class="hi">仅5/20 (25%) 认为没必要</td>
+            <td class="hi">强</td><td>中</td><td>中</td>
+            <td><span style="background:#fce8e6;color:#c62828;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:700;">P0</span></td>
+          </tr>
+          <tr>
+            <td><strong>📸 AI家庭照片整理 (S42)</strong></td>
+            <td class="hi">17/20 (85%)</td>
+            <td>75%</td><td class="hi">100%</td><td class="hi">92%</td>
+            <td><span style="background:#fce8e6;color:#c62828;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:700;">P0</span></td>
+          </tr>
+          <tr>
+            <td>🎬 儿童成长AI记忆故事 (S52)</td>
+            <td class="hi">12/20 (60%)</td>
+            <td>5/8 (62%)</td><td class="hi">6/8 (75%)</td><td>7/12 (58%)</td>
+            <td><span style="background:#fff3e0;color:#e65100;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:700;">P1</span></td>
+          </tr>
+          <tr>
+            <td>🗓 "X年前的今天"提醒 (S43)</td>
+            <td class="hi">仅5/20 (25%) 认为没必要</td>
+            <td>中</td><td>中</td><td>中</td>
+            <td><span style="background:#fff3e0;color:#e65100;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:700;">P1</span></td>
+          </tr>
+          <tr>
+            <td>📁 按年龄段自动分组相册 (S43)</td>
+            <td>7/20 (35%) 认为没必要</td>
+            <td class="hi">强(25%)</td><td class="lo">弱(50%)</td><td class="lo">弱(50%)</td>
+            <td><span style="background:#e8f5e9;color:#2e7d32;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:700;">P2</span></td>
+          </tr>
+          <tr>
+            <td>📷 摄像头自动录制·室外/庭院 (S54/S55)</td>
+            <td>12/20 (60%) 接受</td>
+            <td>50%</td><td class="hi">75%</td><td>50%</td>
+            <td><span style="background:#e8f5e9;color:#2e7d32;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:700;">P2</span></td>
+          </tr>
+          <tr>
+            <td>🏠 摄像头自动录制·室内 (S54)</td>
+            <td class="lo">5/20 (25%) 坚决反对</td>
+            <td>中性偏开放</td><td>开放</td><td class="lo">有隐私顾虑</td>
+            <td><span style="background:#f5f5f5;color:#757575;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:700;">P3</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 针对各子群的产品建议 -->
+  <div class="card">
+    <div class="card-title"><span class="icon" style="background:#fff3e0;">💡</span>产品设计核心建议（有孩子群体）</div>
+    <div style="display:flex;flex-direction:column;gap:0;">
+      <div style="display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid #f0f0f0;">
+        <div style="width:28px;height:28px;background:#e65100;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;">1</div>
+        <div><strong style="display:block;margin-bottom:4px;">自动里程碑识别是差异化核心（P0）</strong><span style="color:#616161;font-size:13px;">AI自动识别"宝宝第一步/入学/毕业"等里程碑，无需用户手动标注。仅25%有孩子用户认为"里程碑提醒没必要"，需求极强。可结合HomeBase摄像头触发+相机照片AI识别双通道。</span></div>
+      </div>
+      <div style="display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid #f0f0f0;">
+        <div style="width:28px;height:28px;background:#e65100;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;">2</div>
+        <div><strong style="display:block;margin-bottom:4px;">AI成长视频的期望是"真实自然"而非"华丽转场"（P1）</strong><span style="color:#616161;font-size:13px;">8/20 (40%) 认为AI生成成长视频"没必要"，但深层原因是对华丽风格的抵触（S53: 2/20）。产品需提供简约/记录风格选项，同时给用户手动精选参与感。学龄期家长（8/20,62%痛点）是最核心受众。</span></div>
+      </div>
+      <div style="display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid #f0f0f0;">
+        <div style="width:28px;height:28px;background:#e65100;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;">3</div>
+        <div><strong style="display:block;margin-bottom:4px;">摄像头拍摄：室外优先，室内严格opt-in（P2）</strong><span style="color:#616161;font-size:13px;">学龄期家长对室外/庭院自动拍摄接受度最高（75%）。室内拍摄需要：用户主动开启 + 青少年子女知情确认 + 明确"本地存储不上云"承诺。幼儿期家长（62%对所有场景OK）可作为室内拍摄的首批推广群体。</span></div>
+      </div>
+      <div style="display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid #f0f0f0;">
+        <div style="width:28px;height:28px;background:#e65100;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;">4</div>
+        <div><strong style="display:block;margin-bottom:4px;">45+岁家长是AI记忆故事的最强消费者（P1）</strong><span style="color:#616161;font-size:13px;">9/10（90%）的45+岁家长对AI记忆故事有正向意愿，且这部分家长的孩子多处于学龄至青少年期——"时光流逝感"最强烈。针对这一群体，节日自动推送（节日故事30%、"X年前今天"25%认为没必要）是低频打扰的高价值触达方式。</span></div>
+      </div>
+      <div style="display:flex;gap:14px;align-items:flex-start;padding:14px 0;">
+        <div style="width:28px;height:28px;background:#e65100;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;">5</div>
+        <div><strong style="display:block;margin-bottom:4px;">解决45+岁家长的"家人照片分散"痛点（P0）</strong><span style="color:#616161;font-size:13px;">45+岁家长中5/10（50%）有"家人照片各存手机"的痛点，是年轻家长（1/10, 10%）的5倍。主要原因是祖父母/长辈拍了照但无法统一。家庭共享相册+长辈免APP被动推送（投屏至电视）是核心解决方案。</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<footer>
+  有孩子用户 儿童成长记录专题分析 &nbsp;|&nbsp; n=20（幼儿8 · 学龄8 · 青少年12）&nbsp;|&nbsp; 来源：eufy HomeBase 4 用户调研 &nbsp;|&nbsp; 2026-04-13
+</footer>
+
+<script>
+function ic(id, opt) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const ch = echarts.init(el);
+  ch.setOption(opt);
+  window.addEventListener('resize', () => ch.resize());
+}
+
+// 孩子年龄分布
+ic('ageKidsChart', {
+  tooltip: { formatter: p => `${p.name}: <b>${p.value}人</b>` },
+  series: [{
+    type:'pie', radius:['40%','72%'],
+    data:[
+      {name:'幼儿(0-6岁)', value:8, itemStyle:{color:'#ff8a65'}},
+      {name:'学龄(7-12岁)', value:8, itemStyle:{color:'#42a5f5'}},
+      {name:'青少年(13-18岁)', value:12, itemStyle:{color:'#ab47bc'}},
+    ],
+    label:{formatter:'{b}\n{c}人', fontSize:12},
+    emphasis:{itemStyle:{shadowBlur:8,shadowColor:'rgba(0,0,0,.2)'}}
+  }]
+});
+
+// S41 整体痛点
+ic('painOverallChart', {
+  tooltip:{},
+  grid:{left:10,right:60,top:10,bottom:10,containLabel:true},
+  xAxis:{type:'value',max:50,axisLabel:{formatter:v=>v+'%'}},
+  yAxis:{type:'category',
+    data:['没有困扰','存着不回看','家人照片分散','想做成长视频但太费时','照片太多散乱'],
+    axisLabel:{fontSize:11,width:160,overflow:'break'}},
+  series:[{
+    type:'bar',barMaxWidth:20,
+    data:[30,20,30,40,45],
+    itemStyle:{color: p => p.value>=40?'#e65100':p.value>=30?'#ff8a65':'#ffccbc'},
+    label:{show:true,position:'right',formatter:p=>{
+      const counts=[6,4,6,8,9]; return counts[p.dataIndex]+'/20 ('+p.value+'%)';
+    },fontSize:11}
+  }]
+});
+
+// S41 按年龄段
+ic('painByAgeChart', {
+  tooltip:{trigger:'axis',axisPointer:{type:'shadow'}},
+  legend:{data:['幼儿(0-6)','学龄(7-12)','青少年(13-18)'],bottom:0,textStyle:{fontSize:11}},
+  grid:{left:10,right:10,top:20,bottom:45,containLabel:true},
+  xAxis:{type:'value',max:70,axisLabel:{formatter:v=>v+'%'}},
+  yAxis:{type:'category',
+    data:['照片太多散乱','想做成长视频','家人照片分散'],
+    axisLabel:{fontSize:11}},
+  series:[
+    {name:'幼儿(0-6)', type:'bar', data:[50,38,25], itemStyle:{color:'#ff8a65'}, barMaxWidth:12,
+     label:{show:true,position:'right',formatter:p=>['4/8','3/8','2/8'][p.dataIndex]+'('+p.value+'%)',fontSize:10}},
+    {name:'学龄(7-12)', type:'bar', data:[50,62,25], itemStyle:{color:'#42a5f5'}, barMaxWidth:12,
+     label:{show:true,position:'right',formatter:p=>['4/8','5/8','2/8'][p.dataIndex]+'('+p.value+'%)',fontSize:10}},
+    {name:'青少年(13-18)', type:'bar', data:[58,33,42], itemStyle:{color:'#ab47bc'}, barMaxWidth:12,
+     label:{show:true,position:'right',formatter:p=>['7/12','4/12','5/12'][p.dataIndex]+'('+p.value+'%)',fontSize:10}},
+  ]
+});
+
+// S42
+ic('s42Chart', {
+  tooltip:{trigger:'axis',axisPointer:{type:'shadow'}},
+  legend:{data:['非常有帮助','比较有帮助','不太有帮助','完全不需要'],bottom:0,textStyle:{fontSize:11}},
+  grid:{left:80,right:10,top:20,bottom:48},
+  xAxis:{type:'category',data:['整体(n=20)','幼儿(0-6)\nn=8','学龄(7-12)\nn=8','青少年(13-18)\nn=12','家长<45\nn=10','家长45+\nn=10'],axisLabel:{fontSize:10}},
+  yAxis:{type:'value',max:100,axisLabel:{formatter:v=>v+'%'}},
+  series:[
+    {name:'非常有帮助',type:'bar',stack:'s',data:[65,75,75,75,60,70],itemStyle:{color:'#2e7d32'},
+     label:{show:true,formatter:p=>p.value>8?p.value+'%':'',fontSize:10,color:'#fff'}},
+    {name:'比较有帮助',type:'bar',stack:'s',data:[20,0,25,17,20,20],itemStyle:{color:'#81c784'},
+     label:{show:true,formatter:p=>p.value>8?p.value+'%':'',fontSize:10,color:'#fff'}},
+    {name:'不太有帮助',type:'bar',stack:'s',data:[0,0,0,0,0,0],itemStyle:{color:'#ffb300'}},
+    {name:'完全不需要',type:'bar',stack:'s',data:[15,25,0,8,20,10],itemStyle:{color:'#e53935'},
+     label:{show:true,formatter:p=>p.value>8?p.value+'%':'',fontSize:10,color:'#fff'}},
+  ]
+});
+
+// S43
+ic('s43Chart', {
+  tooltip:{},
+  grid:{left:10,right:60,top:10,bottom:10,containLabel:true},
+  xAxis:{type:'value',max:55,axisLabel:{formatter:v=>v+'%'}},
+  yAxis:{type:'category',
+    data:['AI生成成长视频','按年龄段分组','汇聚全家照片','里程碑提醒','X年前今天提醒','以上全都想要'].reverse(),
+    axisLabel:{fontSize:11,width:150,overflow:'break'}},
+  series:[{
+    type:'bar',barMaxWidth:18,
+    data:[40,35,25,25,25,40].reverse(),
+    itemStyle:{color: p => {
+      const vals=[40,35,25,25,25,40].reverse();
+      const v=vals[p.dataIndex];
+      return v<=25?'#2e7d32':v<=35?'#ff8a65':'#9e9e9e';
+    }},
+    label:{show:true,position:'right',formatter:(p)=>{
+      const counts=[8,7,5,5,5,8].reverse(); return counts[p.dataIndex]+'/20 ('+p.value+'%)';
+    },fontSize:10}
+  }]
+});
+
+// S51 分布
+ic('s51Chart', {
+  tooltip:{formatter:p=>`${p.name}: <b>${p.value}人 (${Math.round(p.value/20*100)}%)</b>`},
+  series:[{
+    type:'pie',radius:['38%','70%'],
+    data:[
+      {name:'非常想看', value:7, itemStyle:{color:'#2e7d32'}},
+      {name:'比较想看', value:8, itemStyle:{color:'#81c784'}},
+      {name:'不太感兴趣', value:3, itemStyle:{color:'#ffb300'}},
+      {name:'完全不感兴趣', value:2, itemStyle:{color:'#e53935'}},
+    ],
+    label:{formatter:'{b}\n{c}人', fontSize:12},
+    emphasis:{itemStyle:{shadowBlur:8,shadowColor:'rgba(0,0,0,.2)'}}
+  }]
+});
+
+// S52 主题
+ic('s52Chart', {
+  tooltip:{},
+  legend:{data:['幼儿(0-6)','学龄(7-12)','青少年(13-18)','整体(n=20)'],bottom:0,textStyle:{fontSize:11}},
+  grid:{left:150,right:60,top:10,bottom:48},
+  xAxis:{type:'value',max:80,axisLabel:{formatter:v=>v+'%'}},
+  yAxis:{type:'category',
+    data:['年度回顾','纪念日故事','生日故事','宠物故事','亲子时刻','节日故事','旅行故事','儿童成长故事'].reverse(),
+    axisLabel:{fontSize:11,width:140,overflow:'break'}},
+  series:[
+    {name:'整体(n=20)', type:'bar', barGap:'0%',
+     data:[5,10,10,10,25,30,40,60].reverse(), itemStyle:{color:'#e65100',opacity:.7}, barMaxWidth:8,
+     label:{show:true,position:'right',formatter:p=>p.value+'%',fontSize:9}},
+    {name:'幼儿(0-6)', type:'bar',
+     data:[12,12,25,12,12,38,50,62].reverse(), itemStyle:{color:'#ff8a65',opacity:.85}, barMaxWidth:8},
+    {name:'学龄(7-12)', type:'bar',
+     data:[0,12,12,0,38,25,50,75].reverse(), itemStyle:{color:'#42a5f5',opacity:.85}, barMaxWidth:8},
+    {name:'青少年(13-18)', type:'bar',
+     data:[0,17,17,8,25,25,33,58].reverse(), itemStyle:{color:'#ab47bc',opacity:.85}, barMaxWidth:8},
+  ]
+});
+
+// S54 整体
+ic('s54Chart', {
+  tooltip:{formatter:p=>`${p.name}: <b>${p.value}人 (${Math.round(p.value/20*100)}%)</b>`},
+  series:[{
+    type:'pie',radius:['38%','70%'],
+    data:[
+      {name:'非常感兴趣', value:5, itemStyle:{color:'#1b5e20'}},
+      {name:'比较感兴趣/愿意尝试', value:7, itemStyle:{color:'#66bb6a'}},
+      {name:'中立/无所谓', value:3, itemStyle:{color:'#ffb300'}},
+      {name:'不舒适(只用于安防)', value:5, itemStyle:{color:'#c62828'}},
+    ],
+    label:{formatter:'{b}\n{c}人', fontSize:11.5},
+    emphasis:{itemStyle:{shadowBlur:8,shadowColor:'rgba(0,0,0,.2)'}}
+  }]
+});
+
+// S54 by age
+ic('s54ByAgeChart', {
+  tooltip:{trigger:'axis',axisPointer:{type:'shadow'}},
+  legend:{data:['非常感兴趣','比较感兴趣','中立','不舒适'],bottom:0,textStyle:{fontSize:10}},
+  grid:{left:10,right:10,top:20,bottom:50,containLabel:true},
+  xAxis:{type:'category',data:['幼儿(0-6)\nn=8','学龄(7-12)\nn=8','青少年(13-18)\nn=12','家长<45\nn=10','家长45+\nn=10'],axisLabel:{fontSize:10}},
+  yAxis:{type:'value',max:100,axisLabel:{formatter:v=>v+'%'}},
+  series:[
+    {name:'非常感兴趣',type:'bar',stack:'s',data:[25,38,17,30,20],itemStyle:{color:'#1b5e20'},
+     label:{show:true,formatter:p=>p.value>8?p.value+'%':'',fontSize:10,color:'#fff'}},
+    {name:'比较感兴趣',type:'bar',stack:'s',data:[25,38,33,40,30],itemStyle:{color:'#66bb6a'},
+     label:{show:true,formatter:p=>p.value>8?p.value+'%':'',fontSize:10,color:'#fff'}},
+    {name:'中立',type:'bar',stack:'s',data:[38,12,17,0,30],itemStyle:{color:'#ffb300'},
+     label:{show:true,formatter:p=>p.value>8?p.value+'%':'',fontSize:10}},
+    {name:'不舒适',type:'bar',stack:'s',data:[12,12,33,30,20],itemStyle:{color:'#c62828'},
+     label:{show:true,formatter:p=>p.value>8?p.value+'%':'',fontSize:10,color:'#fff'}},
+  ]
+});
+
+// Nav active
+document.querySelectorAll('.nav a').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    document.querySelector(a.getAttribute('href'))?.scrollIntoView({behavior:'smooth'});
+    document.querySelectorAll('.nav a').forEach(x=>x.classList.remove('on'));
+    a.classList.add('on');
+  });
+});
+</script>
+</body>
+</html>
+

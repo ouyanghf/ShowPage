@@ -1,0 +1,13 @@
+services:
+  showpage:
+    build: .
+    container_name: showpage
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./storage:/app/storage
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+      - DB_PATH=/app/storage/showpage.db
+    restart: unless-stopped
